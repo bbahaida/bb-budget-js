@@ -66,14 +66,45 @@ var UIController = (function(){
         incomesContainer: '.income__list',
         expensesContainer: '.expenses__list'
     }
+
+    function validateInput(){
+        var tNode, dNode, vNode, t, d, v;
+
+        tNode = document.querySelector(DOMStrings.inputType);
+        dNode = document.querySelector(DOMStrings.inputDescription);
+        vNode = document.querySelector(DOMStrings.inputValue);
+
+        t = tNode.value;
+        d = dNode.value;
+        v = parseFloat(vNode.value);
+
+        if(!(t && d && v)){
+            if(!t){
+                console.log('type must not be '+t);
+                //tNode.focus();
+            }else if(!d){
+                console.log('description must not be '+d);
+                dNode.focus();
+            }else if(!v){
+                console.log('value must not be '+v);
+                vNode.focus();
+            }
+            return null;
+        }
+
+        return {
+            type: t,
+            description: d,
+            value: v
+        };
+        
+        
+    }
     
     return {
         getInput: function(){
-            return {
-                type: document.querySelector(DOMStrings.inputType).value,
-                description: document.querySelector(DOMStrings.inputDescription).value,
-                value: document.querySelector(DOMStrings.inputValue).value
-            };
+
+            return validateInput();
         },
         addListItem: function(type, obj){
             var html, newHtml, element;
@@ -149,21 +180,23 @@ var AppController = (function(budgetCtrl, UICtrl){
     
     var addItem = function(){
         // 1. Get the field input data
-        var input = UICtrl.getInput();
+        var input, item;
+        input = UICtrl.getInput();
+        if(input){
+            // 2. Add the item to the budget controller
+            item = budgetCtrl.addItem(input.type, input.description, input.value);
 
-        // 2. Add the item to the budget controller
-        var item = budgetCtrl.addItem(input.type, input.description, parseFloat(input.value));
+            // 3. Add the item to the UI
+            UICtrl.addListItem(input.type, item);
 
-        // 3. Add the item to the UI
-        UICtrl.addListItem(input.type, item);
+            // 4. Clear fields
+            UICtrl.clearFilds();
 
-        // 4. Clear fields
-        UICtrl.clearFilds();
+            // 5. Calculate the budget
 
-        // 5. Calculate the budget
-
-        // 6. Display the budget on the UI
+            // 6. Display the budget on the UI
         
+        }
 
     }
 
@@ -172,7 +205,7 @@ var AppController = (function(budgetCtrl, UICtrl){
           console.log('App started .....');
           setupEventListeners();
           
-          //document.querySelector(UICtrl.getDOMStrings().inputDescription).focus();
+          document.querySelector(UICtrl.getDOMStrings().inputDescription).focus();
           
       }  
     };
